@@ -18,10 +18,9 @@ jobs:
 
       - name: Build OSS image
         run: |
-          docker buildx build --tag "hazelcast-oss:test" hazelcast-oss
+          docker buildx build --load --tag "hazelcast-oss:test" hazelcast-oss
 
       - name: Run Smoke Test against OSS image
         timeout-minutes: 2
         run: |
-          docker images
-          .github/scripts/simple-smoke-test.sh "hazelcast-oss:test"
+          .github/scripts/simple-smoke-test.sh hazelcast-oss:test
