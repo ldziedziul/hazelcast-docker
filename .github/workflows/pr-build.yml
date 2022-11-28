@@ -6,7 +6,7 @@ on:
     paths:
       - 'hazelcast-oss/**'
 jobs:
-  push:
+  test-oss-pr:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,9 +21,9 @@ jobs:
 
       - name: Build OSS image
         run: |
-          docker buildx build hazelcast-oss:test hazelcast-oss
+          docker buildx build --tag hazelcast-oss:test hazelcast-oss
 
-      - name: Run Smoke Test
+      - name: Run Smoke Test against OSS image
         timeout-minutes: 2
         run: |
           .github/scripts/simple-smoke-test.sh hazelcast-oss:test
