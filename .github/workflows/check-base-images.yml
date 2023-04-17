@@ -45,6 +45,7 @@ jobs:
           . .github/scripts/base-image-updated.sh
           if base_image_updated hazelcast/hazelcast:${{ matrix.version }} v${{ matrix.version }}/hazelcast-oss/Dockerfile; then 
             echo "Image ${{ matrix.version }} needs rebuild"
+            gh workflow run tag_image_push.yml --ref v${{ matrix.version }} -f HZ_VERSION=${{ matrix.version }}
           else
             echo "Image ${{ matrix.version }} is up-to-date"
           fi
