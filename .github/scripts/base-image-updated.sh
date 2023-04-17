@@ -30,7 +30,7 @@ function get_base_image_name() {
 function base_image_updated() {
   local CURRENT_IMAGE=$1
   local DOCKERFILE=$2
-  local BASE_IMAGE=$(get_base_image_name "$DOCKERFILE")
+  local BASE_IMAGE=alpine:latest
   docker pull "$BASE_IMAGE"
   docker pull "$CURRENT_IMAGE"
   local BASE_IMAGE_SHA=$(docker image inspect "$BASE_IMAGE" | jq -r '.[].RootFS.Layers[0]')
