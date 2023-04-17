@@ -2,6 +2,10 @@ name: Check base images
 
 on:
   workflow_dispatch:
+    inputs:
+      MINIMAL_SUPPORTED_VERSION:
+        description: 'Minimal supported version from which we should start checking images, e.g. 5.1.1, 5.0.1, 4.2.3. Default values is 4.2'
+        required: true
 
 jobs:
   get-supported-versions:
@@ -9,6 +13,9 @@ jobs:
     name: Get supported versions
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+    env:
+      MINIMAL_SUPPORTED_VERSION: ${{ github.event.inputs.MINIMAL_SUPPORTED_VERSION }}
+      DEFAULT_MINIMAL_SUPPORTED_VERSION: 4.2
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -17,9 +24,8 @@ jobs:
       - id: set-matrix
         name: Get supported versions
         run: |
-          MINIMAL_SUPPORTED_VERSION=5.2.1
           . .github/scripts/get-supported-versions.sh
-          versions=$(get_supported_versions "$MINIMAL_SUPPORTED_VERSION" | jq -R . | jq -c -s .)
+          versions=$(get_supported_versions "${MINIMAL_SUPPORTED_VERSION:-$DEFAULT_MINIMAL_SUPPORTED_VERSION}" | jq -R . | jq -c -s .)
           echo "Found supported versions: $versions"
           echo "matrix={\"version\":$versions}" >> $GITHUB_OUTPUT
 
