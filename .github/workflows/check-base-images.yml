@@ -49,3 +49,5 @@ jobs:
           else
             echo "Image ${{ matrix.version }} is up-to-date"
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
