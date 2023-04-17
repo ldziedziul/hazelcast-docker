@@ -1,0 +1,50 @@
+name: Check base images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-supported-versions:
+    runs-on: ubuntu-latest
+    name: Get supported versions
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: set-matrix
+        name: Get supported versions
+        run: |
+          MINIMAL_SUPPORTED_VERSION=5.2.1
+          . .github/scripts/get-supported-versions.sh
+          versions=$(get_supported_versions "$MINIMAL_SUPPORTED_VERSION" | jq -R . | jq -c -s .)
+          echo "Found supported versions: $versions"
+          echo "matrix={\"version\":$versions}" >> $GITHUB_OUTPUT
+
+  trigger-rebuild:
+    runs-on: ubuntu-latest
+    name: Rebuild ${{ matrix.version }} if base image changed
+    needs: get-supported-versions
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.get-supported-versions.outputs.matrix) }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Checkout version ${{ matrix.version }}
+        uses: actions/checkout@v3
+        with:
+          ref: v${{ matrix.version }}
+          path: v${{ matrix.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check if base image updated
+        run: |
+          echo "Checking image ${{ matrix.version }}"
+          . .github/scripts/base-image-updated.sh
+          if base_image_updated hazelcast/hazelcast:${{ matrix.version }} v${{ matrix.version }}/hazelcast-oss/Dockerfile; then 
+            echo "Image ${{ matrix.version }} needs rebuild"
+          else
+            echo "Image ${{ matrix.version }} is up-to-date"
+          fi
